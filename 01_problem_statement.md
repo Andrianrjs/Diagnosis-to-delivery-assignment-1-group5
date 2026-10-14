@@ -57,3 +57,34 @@ relies on manual interpretation of a complex policy cross-checked against scatte
   producing the "decision receipt."
 - **Process:** L4/L2/L1 trust thresholds + escalation.
 - **Docs:** clarify the policy upstream to reduce ambiguity.
+
+## Is AI the right tool?
+
+**1. Is there a rule that solves 80%?**
+Partly. Clear-cut cases (amount < threshold + tracking confirms delivery/return +
+within window) can be handled by a deterministic rule (~70% of sub-€20 cases). But an
+ambiguous remainder (unclear tracking, policy exceptions, non-standard evidence) resists
+rules — and even clear cases require reading tracking evidence and writing a decision
+receipt. A rule handles the easy majority, not all.
+
+**2. Prediction/generation or organisational decision?**
+A mix. Primarily an organisational decision (apply policy → rule on eligibility), but it
+requires understanding unstructured evidence and generating a readable decision receipt.
+
+**3. Do we have the data?**
+Yes: the refund policy text, tracking data, and historical tickets with outcomes
+(25,000/month, ~7,500 refunds) to build, evaluate and measure against. The receipts also
+form an audit log.
+
+**4. What does one error cost?**
+Two opposite failures: over-refunding (silent money leakage) and wrongly refusing (churn,
+lost trust). Bounded per case under the L4 threshold, but costly if systematic. Cf.
+Moffatt v. Air Canada (2024): the company was held liable for its chatbot's wrong answer —
+so an error carries financial AND legal cost.
+
+**Chosen level: Agent.**
+- Not a rule alone: ~20–30% ambiguous cases + evidence interpretation + receipt generation.
+- Not classical ML: it can't read policy/evidence text or generate explanations.
+- Not GenAI alone (the level below): a chatbot answers; our task must *act* — execute the
+  refund, chain tool calls (policy + tracking), and respect L4/L2/L1 trust thresholds.
+  A GenAI responds; an agent acts.
