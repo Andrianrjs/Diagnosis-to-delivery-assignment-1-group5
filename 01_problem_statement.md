@@ -109,3 +109,119 @@ refund cost per case, time to resolution, over-refund rate, wrongful-refusal rat
 - **Recoverable failure:** ⚠️ Yes per case — an L4 error is capped at €20, a wrongful refusal
 can be reopened, an over-refund is caught in post-hoc review. But a *systematic* error is
 silent — so this holds only with weekly receipt audits and a money-based rollback criterion.
+
+## 5. Agent selection: the four questions
+
+**1. High frequency?**
+Yes. ~7,500 refund requests a month (30 % of 25,000 tickets), i.e. ~350 per working day.
+The work is done every hour, not every quarter — the volume justifies building a system
+rather than improving a checklist.
+
+**2. Bounded decision space?**
+Yes. The agent has three tools (read refund policy, read tracking status, execute refund)
+and four possible outcomes: refund, prepare-for-approval, recommend-only, refuse with a
+reason. Nothing else. Every outcome ships with a decision receipt (rule applied, evidence,
+amount), which is itself the audit surface.
+
+**3. Measurable success?**
+Yes, in one sentence per ticket: the refund decision matches what a trained agent would
+have decided on the same evidence, settled in under 1 hour, with a receipt a merchant can
+read. Three countable business metrics follow: share of sub-€20 cases settled without a
+human, time-to-resolution, over-refund rate.
+
+**4. Recoverable failure?**
+Partly, and this is the weak point of P4. A wrongful refusal is recoverable: the merchant
+re-opens, a human overturns it. A wrongful refund is **not** recoverable case by case
+(the money is gone) and it fails silently — nobody opens a ticket to complain about being
+paid. Bounded per case by the €20 L4 ceiling, but a systematic error, or a merchant who
+discovers the threshold and splits requests, compounds before anyone notices.
+
+**Consequence for the design, not just the paperwork:**
+- the €20 autonomous ceiling and the tracking-evidence requirement are the two guardrails
+  that make the failure bounded;
+- a daily reconciliation of refunded amount vs. the pre-agent baseline is the detector for
+  the silent failure mode (S7 monitoring);
+- the rollback plan is a kill-switch that drops the agent to L2 (prepares, human approves)
+  on every case, not an off switch — turning it off returns the queue to a 3-day wait.
+
+---
+
+## 6. Press release + the three "would have to be true"
+
+### Press release (working backwards, dated at launch)
+
+**LabelFlow settles small shipping-label refunds in under an hour**
+
+*Paris, 30 June 2027* — LabelFlow, the logistics SaaS used by 15,000 e-commerce
+merchants, today announced that shipping-label refund requests under €20 are now settled
+automatically, in under an hour instead of three days.
+
+Until now, every refund request was reviewed by a support agent, who read the refund
+policy, opened a separate system to check package tracking, and decided. For requests
+under €20, that review cost LabelFlow more than the amount refunded, and merchants waited
+three days for an answer worth less than the wait.
+
+The refund agent now reads the policy and the tracking evidence together, and returns a
+decision receipt: the rule it applied, the evidence it relied on, the amount. Under €20
+it settles the case on its own and a human reviews a sample afterwards. Between €20 and
+€100 it prepares the decision and a human approves it. Above €100 it only recommends, and
+a human decides. It never refunds without tracking evidence.
+
+"We were spending five euros of agent time to decide whether to give a merchant back
+twelve," said [Head of Support Operations]. "What we were really selling them was a
+three-day wait."
+
+Merchants see the decision and the reasoning behind it in the same message. Support agents
+keep the cases where the evidence is ambiguous or the amount is material, which is where
+their judgement was always worth more.
+
+### The three "would have to be true"
+
+| # | Assumption | What would make it false | How we test it |
+|---|---|---|---|
+| 1 | Eligibility for sub-€20 refunds is decidable from the policy text + tracking data alone, on at least 70 % of cases | Decisions depend on context living nowhere in those two sources (merchant history, commercial gestures, verbal arrangements) | Manual audit of 200 historical sub-€20 refund tickets: can the recorded decision be reconstructed from policy + tracking alone? |
+| 2 | The agent's over-refund rate does not exceed the current human over-refund rate | The agent is systematically more generous on ambiguous evidence, or merchants learn to split requests under the €20 line | Replay the agent on the same 200 tickets, compare decisions against the human outcome; monitor refunded amount per merchant per week for splitting |
+| 3 | A merchant who receives an automated decision receipt does not re-open the ticket | The receipt is unreadable, or an automated refusal is less acceptable than a human one | Re-open rate and CSAT on agent-settled cases vs. human-settled cases, measured the same way before and after |
+
+Assumption 1 is the one that decides whether the project exists at all. Assumption 2 is
+the one that decides whether it survives contact with production. The sizing
+(Assignment 2) prices assumption 2 as the cost-of-error line, and finds a third
+assumption we had not identified here: that the in-scope volume is large enough to carry
+the fixed costs. It is not, at refund-only scope.
+
+---
+
+## 7. The do-nothing baseline
+
+Do-nothing is not zero, and it is not static.
+
+**What the current process costs, today**
+
+| Line | Value | Source type |
+|---|---|---|
+| Refund requests per month | ~7,500 (30 % × 25,000) | Measured (platform logs) |
+| Share of requests under €20 | ~65 %, i.e. ~4,875/month | **Guess — to be measured on a 3-month export of refund amounts** |
+| Processing cost per ticket | ~€5 in `01_problem_statement.md`; €7 at base in `02_sizing.xlsx` | Estimate / analogy, to be measured on a 2-week sample |
+| Annual processing cost, sub-€20 slice | ~4,875 × €7 × 12 ≈ **€410k / year** | Derived |
+| Annual processing cost, all refund requests | ~7,500 × €7 × 12 ≈ **€630k / year** | Derived |
+| Wait per request | ~3 days | Measured (support log), to confirm |
+
+**What do-nothing does on its own**
+
+The baseline is not frozen. Without any AI project, the same cost falls a few percent a
+year: agents get faster on a repetitive task, the policy documentation improves, macros
+and canned responses accumulate. We size that at 2–5 % a year (analogy), which
+`02_sizing.xlsx` turns into **+€84k a year** of value that accrues without doing anything.
+
+Do-nothing also carries no new risk: no over-refund leakage from a model, no vendor
+dependency, no re-evaluation burden at every model change, and no legal exposure of the
+kind established in *Moffatt v. Air Canada* (2024 BCCRT 149), where the company was held
+liable for its chatbot's answer.
+
+**The real competitor is not do-nothing**
+
+The hurdle is the next-best use of the same team: a **self-serve refund-status page for
+merchants**, which removes the "where is my refund" tickets without deciding anything.
+Sized at **€180k a year** in `02_sizing.xlsx`. That figure is posed rather than built
+bottom-up, and deserves the same discipline before it decides anything — but on today's
+scope it beats the agent, which is the finding of Assignment 2.
