@@ -189,7 +189,7 @@ Do-nothing is not zero, and it is not static.
 The baseline is not frozen. Without any AI project, the same cost falls a few percent a
 year: agents get faster on a repetitive task, the policy documentation improves, macros
 and canned responses accumulate. We size that at 2–5 % a year (analogy), which
-`02_sizing.xlsx` turns into **+€84k a year** of value that accrues without doing anything.
+`02_sizing.xlsx`` turns into **+€84k a year** of value that accrues without doing anything.
 
 Do-nothing also carries no new risk: no over-refund leakage from a model, no vendor
 dependency, no re-evaluation burden at every model change, and no legal exposure of the

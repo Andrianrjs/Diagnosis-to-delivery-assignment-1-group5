@@ -44,6 +44,10 @@ Every decision writes a receipt: input request, policy clause applied, tracking 
 
 ## 6. How does a merchant reach a human, and how do we roll back?
 
+Every agent decision carries a one-click escalation that routes to a human with the full case context, and the merchant is told the decision was automated. A merchant may not be left with no route to a person: that is the omission the Klarna case exposed, where the customers who could not reach a human had no line in the business case.
+
+Rollback is a downgrade, not a shutdown: the kill-switch moves every case to L2 (the agent prepares, a human approves). Turning the agent off entirely returns the queue to a 3-day wait, so it is the last resort, not the first.
+
 Rollback triggers (any one moves every case to L2):
 
 - **Money trigger (primary):** refunded amount on agent-settled cases exceeds the pre-agent
