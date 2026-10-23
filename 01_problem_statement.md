@@ -99,37 +99,32 @@ wrong answer — so an error carries financial AND legal cost.
 refund, chain tool calls (policy + tracking), and respect L4/L2/L1 trust thresholds.
 A GenAI responds; an agent acts.
 
-## Agent selection check (4 questions)
-
-- **High frequency:** ✅ ~7,500 refund requests/month (~250/day) — measured (P4 brief).
-- **Bounded decision space:** ✅ Three outcomes only (refund / refuse / escalate), two inputs
-(refund policy + tracking data), and the amount sets the trust level (L4 < €20, L2 €20–100, L1 > €100).
-- **Measurable success:** ✅ Every case has a checkable outcome logged in its decision receipt:
-refund cost per case, time to resolution, over-refund rate, wrongful-refusal rate.
-- **Recoverable failure:** ⚠️ Yes per case — an L4 error is capped at €20, a wrongful refusal
-can be reopened, an over-refund is caught in post-hoc review. But a *systematic* error is
-silent — so this holds only with weekly receipt audits and a money-based rollback criterion.
 
 ## 5. Agent selection: the four questions
 
 **1. High frequency?**
+
 Yes. ~7,500 refund requests a month (30 % of 25,000 tickets), i.e. ~350 per working day.
 The work is done every hour, not every quarter — the volume justifies building a system
 rather than improving a checklist.
 
 **2. Bounded decision space?**
+
 Yes. The agent has three tools (read refund policy, read tracking status, execute refund)
 and four possible outcomes: refund, prepare-for-approval, recommend-only, refuse with a
 reason. Nothing else. Every outcome ships with a decision receipt (rule applied, evidence,
 amount), which is itself the audit surface.
 
 **3. Measurable success?**
+
 Yes, in one sentence per ticket: the refund decision matches what a trained agent would
 have decided on the same evidence, settled in under 1 hour, with a receipt a merchant can
-read. Three countable business metrics follow: share of sub-€20 cases settled without a
-human, time-to-resolution, over-refund rate.
+read. Four countable business metrics follow: share of sub-€20 cases settled without a
+human, time-to-resolution, over-refund rate, and wrongful-refusal rate (refusals
+overturned after merchant dispute).
 
 **4. Recoverable failure?**
+
 Partly, and this is the weak point of P4. A wrongful refusal is recoverable: the merchant
 re-opens, a human overturns it. A wrongful refund is **not** recoverable case by case
 (the money is gone) and it fails silently — nobody opens a ticket to complain about being
@@ -152,42 +147,25 @@ discovers the threshold and splits requests, compounds before anyone notices.
 
 **LabelFlow settles small shipping-label refunds in under an hour**
 
-*Paris, 30 June 2027* — LabelFlow, the logistics SaaS used by 15,000 e-commerce
-merchants, today announced that shipping-label refund requests under €20 are now settled
-automatically, in under an hour instead of three days.
+_Paris, 30 June 2027_ — LabelFlow, the logistics SaaS used by 15,000 e-commerce merchants,
+today announced that shipping-label refund requests under €20 are now settled in under an
+hour instead of three days. A refund agent reads the refund policy and the package-tracking
+evidence together, and sends the merchant a decision receipt — the rule applied, the
+evidence, the amount — that is both the answer and the audit trail. Under €20 it settles
+on its own and a human reviews a sample afterwards; above €20 a human approves or decides;
+it never refunds without tracking evidence. "I used to wait three days for a €12 refund
+and an answer I couldn't check," said Camille R., who runs an online homeware store in
+Lyon. "Now I get the money and the reason in the same message, before lunch."
 
-Until now, every refund request was reviewed by a support agent, who read the refund
-policy, opened a separate system to check package tracking, and decided. For requests
-under €20, that review cost LabelFlow more than the amount refunded, and merchants waited
-three days for an answer worth less than the wait.
-
-The refund agent now reads the policy and the tracking evidence together, and returns a
-decision receipt: the rule it applied, the evidence it relied on, the amount. Under €20
-it settles the case on its own and a human reviews a sample afterwards. Between €20 and
-€100 it prepares the decision and a human approves it. Above €100 it only recommends, and
-a human decides. It never refunds without tracking evidence.
-
-"We were spending five euros of agent time to decide whether to give a merchant back
-twelve," said [Head of Support Operations]. "What we were really selling them was a
-three-day wait."
-
-Merchants see the decision and the reasoning behind it in the same message. Support agents
-keep the cases where the evidence is ambiguous or the amount is material, which is where
-their judgement was always worth more.
+_(Merchant quote illustrative — working-backwards exercise.)_
 
 ### The three "would have to be true"
 
-| # | Assumption | What would make it false | How we test it |
-|---|---|---|---|
-| 1 | Eligibility for sub-€20 refunds is decidable from the policy text + tracking data alone, on at least 70 % of cases | Decisions depend on context living nowhere in those two sources (merchant history, commercial gestures, verbal arrangements) | Manual audit of 200 historical sub-€20 refund tickets: can the recorded decision be reconstructed from policy + tracking alone? |
-| 2 | The agent's over-refund rate does not exceed the current human over-refund rate | The agent is systematically more generous on ambiguous evidence, or merchants learn to split requests under the €20 line | Replay the agent on the same 200 tickets, compare decisions against the human outcome; monitor refunded amount per merchant per week for splitting |
-| 3 | A merchant who receives an automated decision receipt does not re-open the ticket | The receipt is unreadable, or an automated refusal is less acceptable than a human one | Re-open rate and CSAT on agent-settled cases vs. human-settled cases, measured the same way before and after |
-
-Assumption 1 is the one that decides whether the project exists at all. Assumption 2 is
-the one that decides whether it survives contact with production. The sizing
-(Assignment 2) prices assumption 2 as the cost-of-error line, and finds a third
-assumption we had not identified here: that the in-scope volume is large enough to carry
-the fixed costs. It is not, at refund-only scope.
+| # | Assumption | What would make it false | How we test it | Session |
+| --- | --- | --- | --- | --- |
+| 1 | Eligibility for sub-€20 refunds is decidable from the policy text + tracking data alone, on at least 70 % of cases | Decisions depend on context living nowhere in those two sources (merchant history, commercial gestures, verbal arrangements) | Manual audit of 200 historical sub-€20 refund tickets: can the recorded decision be reconstructed from policy + tracking alone? | Session 4 |
+| 2 | The agent's over-refund rate does not exceed the current human over-refund rate | The agent is systematically more generous on ambiguous evidence, or merchants learn to split requests under the €20 line | Replay the agent on the same 200 tickets and compare with the human outcome (S4); then monitor refunded amount per merchant per week for splitting (S5) | Session 4 → 5 |
+| 3 | A merchant who receives an automated decision receipt does not re-open the ticket | The receipt is unreadable, or an automated refusal is less acceptable than a human one | Re-open rate and CSAT on agent-settled vs. human-settled cases, measured the same way before and after | Session 5 |
 
 ---
 
