@@ -44,11 +44,71 @@ Every decision writes a receipt: input request, policy clause applied, tracking 
 
 ## 6. How does a merchant reach a human, and how do we roll back?
 
-Every agent decision carries a one-click escalation that routes to a human with the full case context, and the merchant is told the decision was automated. A merchant may not be left with no route to a person: that is the omission the Klarna case exposed, where the customers who could not reach a human had no line in the business case.
+Rollback triggers (any one moves every case to L2):
 
-Rollback is a downgrade, not a shutdown: the kill-switch moves every case to L2 (the agent prepares, a human approves). Turning the agent off entirely returns the queue to a 3-day wait, so it is the last resort, not the first.
+- **Money trigger (primary):** refunded amount on agent-settled cases exceeds the pre-agent
+  baseline by more than **€1,500 over a rolling 7 days** — roughly the agent's weekly net
+  value (€80k/year in `02_sizing.xlsx`). Above that, leakage erases what the agent saves.
+  _Guess — to be recalibrated once the 3-month refund export gives the real baseline._
+- any refund executed without tracking evidence (zero tolerance);
+- wrongful-refusal rate (refusals overturned after dispute) above the human baseline over
+  a rolling 7 days;
+- refunded amount per merchant jumping without a matching request volume (splitting signal);
+- a model-version change that has not passed the eval-set replay.
 
-Rollback triggers: over-refund rate above the human baseline over a rolling 7 days; any refund executed without tracking evidence; refunded amount per merchant jumping without a matching request volume (the splitting signal); a model-version change that has not passed the eval-set replay.
+---
+
+## Assignment 1 — the six governance questions (provisional)
+
+Status legend: ✅ answered · 🔍 to check before launch
+
+**1. EU AI Act risk tier — Limited risk (provisional).**
+The agent decides shipping-label refunds for business customers. It is not in Annex III:
+no creditworthiness scoring, no access to essential services for natural persons, no
+employment decision. Transparency obligations apply: merchants are told the decision was
+automated (see §6).
+🔍 Some merchants are sole traders (natural persons) — confirm this does not change the
+tier, and check whether GDPR Art. 22 (solely automated decisions) applies to an automated
+refusal. Our design already gives a human route on every decision.
+
+**2. Whose data, on what legal basis.**
+- Merchant account and contact data, refund history → **contract** (GDPR Art. 6(1)(b)):
+  processing the refund the merchant asked for.
+- Monitoring for errors, fraud and request splitting; the receipt audit log →
+  **legitimate interest** (Art. 6(1)(f)).
+- Receipt retention for the accounting period → **legal obligation** (Art. 6(1)(c)).
+- Package-tracking data contains the **merchant's end-customers'** names and addresses:
+  third-party data, used only to confirm delivery or return, and kept out of the receipt.
+🔍 Confirm LabelFlow's role (controller vs. processor) for end-customer data in the
+merchant contract; check the vendor's data location and sub-processor terms if we
+orchestrate (Assignment 2).
+
+**3. Who is accountable, and where is the human.** ✅
+Accountability stays with LabelFlow (§4, _Moffatt v. Air Canada_). The human sits after
+the decision under €20 (weekly sample), before it between €20 and €100, and decides
+above €100 and on every refusal (§3).
+🔍 Name the Head of Support Operations and the Legal owner before launch.
+
+**4. What it must never do.** ✅
+Refund without tracking evidence; refund more than €20 on its own; close a case without
+a receipt (§2).
+
+**5. Explainable to whom.**
+- **Merchant:** the decision receipt, in plain language — clause applied, evidence, amount.
+- **Support reviewer:** the same receipt plus the raw evidence, to confirm or overturn.
+- **Finance:** daily reconciliation of refunded amounts against the baseline.
+- **Auditor / Legal:** the full log — model version, trust level, approving human (§5).
+🔍 Test receipt readability with 5–10 merchants (H3, Session 5).
+
+**6. What happens to the people it cannot serve.**
+Cases with missing or ambiguous tracking, non-standard carriers, policy exceptions, or
+merchants who dispute: **missing evidence means escalation, never refusal.** These cases go
+to a human with the full context — no worse than today's 3-day queue — and every merchant
+has a one-click route to a person (§6).
+🔍 Measure the escalation share on the 200 Session 4 tickets; if it exceeds ~30 %, the
+agent serves too few cases to be worth it.
+
+
 
 ---
 
