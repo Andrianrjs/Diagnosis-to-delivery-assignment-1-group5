@@ -98,3 +98,14 @@ wrong answer — so an error carries financial AND legal cost.
 - Not GenAI alone (the level below): a chatbot answers; our task must _act_ — execute the
 refund, chain tool calls (policy + tracking), and respect L4/L2/L1 trust thresholds.
 A GenAI responds; an agent acts.
+
+## Agent selection check (4 questions)
+
+- **High frequency:** ✅ ~7,500 refund requests/month (~250/day) — measured (P4 brief).
+- **Bounded decision space:** ✅ Three outcomes only (refund / refuse / escalate), two inputs
+(refund policy + tracking data), and the amount sets the trust level (L4 < €20, L2 €20–100, L1 > €100).
+- **Measurable success:** ✅ Every case has a checkable outcome logged in its decision receipt:
+refund cost per case, time to resolution, over-refund rate, wrongful-refusal rate.
+- **Recoverable failure:** ⚠️ Yes per case — an L4 error is capped at €20, a wrongful refusal
+can be reopened, an over-refund is caught in post-hoc review. But a *systematic* error is
+silent — so this holds only with weekly receipt audits and a money-based rollback criterion.
